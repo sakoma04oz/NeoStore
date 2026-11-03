@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b12"><meta name="description" content="NeoAI — مساعدك الذكي متعدد اللغات">
+<title>NeoAI — مساعدك الذكي</title>
+<style>
+:root{color-scheme:dark;--bg:#090b12;--panel:#101522;--panel2:#171e2d;--line:#252e40;--text:#edf2ff;--muted:#8e9ab0;--accent:#8b7cff;--accent2:#36d6bd}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 70% -20%,#29244d 0,transparent 42%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;min-height:100vh}
+.app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}.side{background:#0d111b;border-left:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:20px}.logo{font-size:25px;font-weight:850;letter-spacing:-1px}.logo b{color:var(--accent)}.new{border:1px solid #514a89;background:#211e38;color:#fff;border-radius:13px;padding:13px;font:inherit;cursor:pointer}.hint{color:var(--muted);font-size:12px;line-height:1.7}.sidefoot{margin-top:auto}.main{display:flex;flex-direction:column;min-height:100vh;max-width:1100px;width:100%;margin:auto;padding:22px 28px}.top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}.pill{border:1px solid var(--line);padding:8px 12px;border-radius:30px}.welcome{margin:auto;max-width:760px;width:100%;text-align:center;padding:42px 0}.orb{width:68px;height:68px;margin:0 auto 20px;border-radius:22px;background:linear-gradient(135deg,#8b7cff,#36d6bd);display:grid;place-items:center;color:#090b12;font-size:30px;box-shadow:0 12px 50px #8b7cff35}.welcome h1{font-size:clamp(30px,5vw,46px);margin:0 0 12px}.welcome p{color:var(--muted);line-height:1.8;margin:0 auto 30px}.suggestions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;text-align:right}.suggestions button{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:15px;border-radius:14px;text-align:right;cursor:pointer;font:inherit}.suggestions button:hover{border-color:var(--accent)}.chat{width:100%;max-width:800px;margin:24px auto;flex:1;display:flex;flex-direction:column;gap:18px}.msg{display:flex;gap:12px;align-items:flex-start;line-height:1.85;white-space:pre-wrap}.avatar{flex:0 0 34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--panel2);color:var(--accent2);font-weight:800}.msg.user .avatar{background:#292444;color:#c2baff}.bubble{padding:3px 0;max-width:100%;overflow-wrap:anywhere}.composer-wrap{max-width:800px;width:100%;margin:12px auto 0}.composer{display:flex;gap:10px;align-items:flex-end;background:var(--panel);border:1px solid #343d54;border-radius:18px;padding:10px;box-shadow:0 12px 45px #0005}.composer textarea{flex:1;resize:none;min-height:46px;max-height:160px;border:0;outline:0;background:transparent;color:var(--text);font:inherit;padding:10px}.send{border:0;border-radius:13px;background:linear-gradient(135deg,var(--accent),#6558dc);color:white;padding:12px 18px;font:inherit;cursor:pointer}.send:disabled{opacity:.5}.disclaimer{text-align:center;color:#77839a;font-size:11px;line-height:1.7;margin:10px 8px}.notice{border:1px solid #5b4d2e;background:#211d14;color:#e9d8a7;padding:13px 15px;border-radius:13px;font-size:13px;line-height:1.7;margin-top:16px;text-align:right}.hidden{display:none!important}
+@media(max-width:760px){.app{grid-template-columns:1fr}.side{display:none}.main{padding:16px;min-height:100svh}.suggestions{grid-template-columns:1fr}.welcome{padding:30px 0}.top{margin-bottom:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side"><div class="logo">Neo<b>AI</b></div><button class="new" id="newChat">＋ محادثة جديدة</button><div><div class="hint">مساعد ذكي متعدد اللغات</div><p class="hint">اسأل، تعلّم، اكتب، ترجم، أو اطلب المساعدة في البرمجة.</p></div><div class="sidefoot hint">الإصدار الأول · واجهة تجريبية</div></aside>
+<main class="main">
+<div class="top"><span>مساحة المحادثة</span><span class="pill">✦ NeoAI</span></div>
+<section class="welcome" id="welcome"><div class="orb">✦</div><h1>مرحباً بك في <span style="color:var(--accent)">NeoAI</span></h1><p>مساعدك الذكي لفهم الأفكار والإجابة عن الأسئلة. اكتب بلغتك المفضلة وابدأ المحادثة.</p><div class="suggestions"><button data-q="اشرح لي الذكاء الاصطناعي بطريقة بسيطة">✧ اشرح لي موضوعاً صعباً</button><button data-q="ترجم هذه الجملة إلى الإنجليزية: مرحباً، كيف حالك؟">⇄ ساعدني في الترجمة</button><button data-q="اكتب لي خطة لتعلم البرمجة من الصفر">⌘ تعلّم البرمجة</button><button data-q="لخص لي أهمية القراءة في فقرة قصيرة">✎ اكتب أو لخّص نصاً</button></div><div class="notice">تنبيه: هذه النسخة تعرض واجهة NeoAI وتجربة محادثة أولية. للحصول على إجابات حقيقية من نموذج ذكاء اصطناعي، يجب ربطها بخادم آمن وواجهة API؛ لا تضع مفتاح API داخل كود المتصفح.</div></section>
+<section class="chat hidden" id="chat" aria-live="polite"></section>
+<div class="composer-wrap"><div class="composer"><textarea id="prompt" rows="1" placeholder="اكتب سؤالك هنا..."></textarea><button class="send" id="send">إرسال ↑</button></div><div class="disclaimer">قد تخطئ أنظمة الذكاء الاصطناعي؛ تحقق من المعلومات المهمة ولا تشارك بياناتك الشخصية أو كلمات المرور.</div></div>
+</main></div>
+<script>
+const $=s=>document.querySelector(s), chat=$('#chat'), welcome=$('#welcome'), input=$('#prompt');
+function addMessage(text,who){const row=document.createElement('div');row.className='msg '+who;const av=document.createElement('div');av.className='avatar';av.textContent=who==='user'?'أنت':'✦';const b=document.createElement('div');b.className='bubble';b.textContent=text;row.append(av,b);chat.append(row);return row}
+function demoAnswer(q){
+ const s=q.toLowerCase();
+ if(/ترجم|translate|tradu|перев|ترجمة/.test(s))return 'أستطيع مساعدتك في الترجمة بين اللغات. في هذه النسخة الأولية، لم يتم ربط محرك ترجمة أو نموذج ذكاء اصطناعي بعد. عند ربط الخدمة سأتمكن من فهم اللغة المطلوبة وتقديم ترجمة مناسبة.';
+ if(/برمج|code|program|كود|javascript|python/.test(s))return 'يمكن لـ NeoAI مساعدتك في تعلم البرمجة وشرح الأكواد واكتشاف الأخطاء. هذه حالياً نسخة واجهة تجريبية، لذلك لم يتم تفعيل توليد الإجابات البرمجية بعد.';
+ if(/اشرح|شرح|explain|ما هو|ماهي|what is/.test(s))return 'وصل سؤالك بنجاح إلى واجهة NeoAI. لكي أقدم شرحاً معرفياً حقيقياً ومخصصاً لسؤالك، نحتاج إلى ربط التطبيق بنموذج ذكاء اصطناعي عبر خادم آمن. هذه الرسالة توضيحية وليست إجابة مولّدة من نموذج.';
+ return 'تم استلام رسالتك في NeoAI. هذه النسخة الأولى تتضمن واجهة المحادثة والتصميم وتجربة إرسال الرسائل. الخطوة التالية هي إعداد خادم آمن وربط نموذج ذكاء اصطناعي حتى أجيب عن أسئلتك فعلياً بلغات متعددة.';
+}
+function send(){const q=input.value.trim();if(!q)return;welcome.classList.add('hidden');chat.classList.remove('hidden');addMessage(q,'user');input.value='';input.style.height='auto';setTimeout(()=>addMessage(demoAnswer(q),'bot'),250)}
+$('#send').addEventListener('click',send);input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,160)+'px'});
+document.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.q;send()}));
+$('#newChat').addEventListener('click',()=>{chat.innerHTML='';chat.classList.add('hidden');welcome.classList.remove('hidden');input.value='';input.focus()});
+</script>
+</body></html>
