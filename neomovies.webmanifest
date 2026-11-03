@@ -1,0 +1,17 @@
+{
+  "id": "/NeoStore/neomovies.html",
+  "name": "NeoMovies",
+  "short_name": "NeoMovies",
+  "description": "اكتشف الأفلام وابحث عن منصات المشاهدة القانونية",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/NeoStore/neomovies.html",
+  "scope": "/NeoStore/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07110d",
+  "theme_color": "#07110d",
+  "icons": [
+    {"src": "/NeoStore/neomovies-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
