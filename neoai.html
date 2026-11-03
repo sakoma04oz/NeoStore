@@ -21,18 +21,30 @@
 <div class="composer-wrap"><div class="composer"><textarea id="prompt" rows="1" placeholder="اكتب سؤالك هنا..."></textarea><button class="send" id="send">إرسال ↑</button></div><div class="disclaimer">قد تخطئ أنظمة الذكاء الاصطناعي؛ تحقق من المعلومات المهمة ولا تشارك بياناتك الشخصية أو كلمات المرور.</div></div>
 </main></div>
 <script>
+const API_URL = "PUT_YOUR_DEPLOYED_WORKER_URL_HERE";
 const $=s=>document.querySelector(s), chat=$('#chat'), welcome=$('#welcome'), input=$('#prompt');
+const history=[];
 function addMessage(text,who){const row=document.createElement('div');row.className='msg '+who;const av=document.createElement('div');av.className='avatar';av.textContent=who==='user'?'أنت':'✦';const b=document.createElement('div');b.className='bubble';b.textContent=text;row.append(av,b);chat.append(row);return row}
-function demoAnswer(q){
- const s=q.toLowerCase();
- if(/ترجم|translate|tradu|перев|ترجمة/.test(s))return 'أستطيع مساعدتك في الترجمة بين اللغات. في هذه النسخة الأولية، لم يتم ربط محرك ترجمة أو نموذج ذكاء اصطناعي بعد. عند ربط الخدمة سأتمكن من فهم اللغة المطلوبة وتقديم ترجمة مناسبة.';
- if(/برمج|code|program|كود|javascript|python/.test(s))return 'يمكن لـ NeoAI مساعدتك في تعلم البرمجة وشرح الأكواد واكتشاف الأخطاء. هذه حالياً نسخة واجهة تجريبية، لذلك لم يتم تفعيل توليد الإجابات البرمجية بعد.';
- if(/اشرح|شرح|explain|ما هو|ماهي|what is/.test(s))return 'وصل سؤالك بنجاح إلى واجهة NeoAI. لكي أقدم شرحاً معرفياً حقيقياً ومخصصاً لسؤالك، نحتاج إلى ربط التطبيق بنموذج ذكاء اصطناعي عبر خادم آمن. هذه الرسالة توضيحية وليست إجابة مولّدة من نموذج.';
- return 'تم استلام رسالتك في NeoAI. هذه النسخة الأولى تتضمن واجهة المحادثة والتصميم وتجربة إرسال الرسائل. الخطوة التالية هي إعداد خادم آمن وربط نموذج ذكاء اصطناعي حتى أجيب عن أسئلتك فعلياً بلغات متعددة.';
+async function send(){
+ const q=input.value.trim(); if(!q)return;
+ if(API_URL==="PUT_YOUR_DEPLOYED_WORKER_URL_HERE"){welcome.classList.add('hidden');chat.classList.remove('hidden');addMessage(q,'user');addMessage('واجهة NeoAI جاهزة، لكن يجب نشر الخادم وإضافة عنوانه في إعدادات الموقع قبل تفعيل الإجابات الحقيقية.','bot');input.value='';return;}
+ welcome.classList.add('hidden');chat.classList.remove('hidden');
+ history.push({role:'user',content:q}); addMessage(q,'user'); input.value='';input.style.height='auto';
+ const sendButton=$('#send');sendButton.disabled=true;sendButton.textContent='يفكر...';
+ const pending=addMessage('جارٍ التفكير...','bot');
+ try{
+  const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history})});
+  const data=await response.json();
+  if(!response.ok||!data.answer)throw new Error(data.error||'تعذر الاتصال');
+  pending.querySelector('.bubble').textContent=data.answer;
+  history.push({role:'assistant',content:data.answer});
+ }catch(error){pending.querySelector('.bubble').textContent='لم أتمكن من الاتصال بخادم NeoAI. تأكد من نشر الخادم وإعداد مفتاح الخدمة.';history.pop();}
+ finally{sendButton.disabled=false;sendButton.textContent='إرسال ↑';}
 }
-function send(){const q=input.value.trim();if(!q)return;welcome.classList.add('hidden');chat.classList.remove('hidden');addMessage(q,'user');input.value='';input.style.height='auto';setTimeout(()=>addMessage(demoAnswer(q),'bot'),250)}
-$('#send').addEventListener('click',send);input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,160)+'px'});
+$('#send').addEventListener('click',send);
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,160)+'px'});
 document.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.q;send()}));
-$('#newChat').addEventListener('click',()=>{chat.innerHTML='';chat.classList.add('hidden');welcome.classList.remove('hidden');input.value='';input.focus()});
+$('#newChat').addEventListener('click',()=>{chat.innerHTML='';chat.classList.add('hidden');welcome.classList.remove('hidden');input.value='';history.length=0;input.focus()});
 </script>
 </body></html>
