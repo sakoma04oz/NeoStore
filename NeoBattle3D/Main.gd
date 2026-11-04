@@ -391,6 +391,9 @@ func _make_island() -> void:
     _make_district(Vector3(-58, 0, 0), 3, 1, "RIVERSIDE")
     _make_district(Vector3(0, 0, 62), 4, 2, "VILLAGE")
     _make_district(Vector3(62, 0, 0), 3, 3, "SHIPYARD")
+    _make_peak_hill(Vector3(0, 0, -76))
+    _make_shipyard_docks(Vector3(76, 0, 0))
+    _make_village_details(Vector3(0, 0, 62))
     _make_villa_compound(Vector3(48, 0, -42))
     for i in range(68):
         var p := Vector2(randf_range(-100, 100), randf_range(-100, 100))
@@ -695,3 +698,83 @@ func _make_observatory_dish(pos: Vector3) -> void:
     dish.position = pos + Vector3(0, 5.1, 0)
     dish.rotation_degrees.x = -25
     add_child(dish)
+
+
+func _make_peak_hill(center: Vector3) -> void:
+    var hill := MeshInstance3D.new()
+    var hill_mesh := SphereMesh.new()
+    hill_mesh.radius = 17.0
+    hill_mesh.height = 13.0
+    hill.mesh = hill_mesh
+    hill.scale = Vector3(1.35, 0.55, 1.0)
+    var hill_mat := StandardMaterial3D.new()
+    hill_mat.albedo_color = Color(0.25, 0.37, 0.22)
+    hill_mat.roughness = 1.0
+    hill.material_override = hill_mat
+    hill.position = center + Vector3(0, 2.4, 0)
+    add_child(hill)
+    var lookout := MeshInstance3D.new()
+    var lookout_mesh := BoxMesh.new()
+    lookout_mesh.size = Vector3(5.5, 0.6, 5.5)
+    lookout.mesh = lookout_mesh
+    var deck_mat := StandardMaterial3D.new()
+    deck_mat.albedo_color = Color(0.38, 0.29, 0.2)
+    lookout.material_override = deck_mat
+    lookout.position = center + Vector3(0, 7.2, 0)
+    add_child(lookout)
+
+func _make_shipyard_docks(center: Vector3) -> void:
+    var wood_mat := StandardMaterial3D.new()
+    wood_mat.albedo_color = Color(0.34, 0.23, 0.15)
+    for i in range(3):
+        var dock := MeshInstance3D.new()
+        var dock_mesh := BoxMesh.new()
+        dock_mesh.size = Vector3(4.0, 0.55, 19.0)
+        dock.mesh = dock_mesh
+        dock.material_override = wood_mat
+        dock.position = center + Vector3(-7.0 + float(i) * 7.0, 0.15, 18.0)
+        add_child(dock)
+        for j in range(4):
+            var post := MeshInstance3D.new()
+            var post_mesh := BoxMesh.new()
+            post_mesh.size = Vector3(0.45, 1.7, 0.45)
+            post.mesh = post_mesh
+            post.material_override = wood_mat
+            post.position = dock.position + Vector3(-1.4, -0.55, -7.0 + float(j) * 4.5)
+            add_child(post)
+    var crane_mat := StandardMaterial3D.new()
+    crane_mat.albedo_color = Color(0.78, 0.55, 0.18)
+    var crane := MeshInstance3D.new()
+    var crane_mesh := BoxMesh.new()
+    crane_mesh.size = Vector3(0.7, 9.0, 0.7)
+    crane.mesh = crane_mesh
+    crane.material_override = crane_mat
+    crane.position = center + Vector3(15, 4.5, 3)
+    add_child(crane)
+    var arm := MeshInstance3D.new()
+    var arm_mesh := BoxMesh.new()
+    arm_mesh.size = Vector3(10, 0.55, 0.65)
+    arm.mesh = arm_mesh
+    arm.material_override = crane_mat
+    arm.position = center + Vector3(10, 8.7, 3)
+    add_child(arm)
+
+func _make_village_details(center: Vector3) -> void:
+    var fence_mat := StandardMaterial3D.new()
+    fence_mat.albedo_color = Color(0.42, 0.29, 0.17)
+    for i in range(8):
+        var post := MeshInstance3D.new()
+        var post_mesh := BoxMesh.new()
+        post_mesh.size = Vector3(0.22, 1.1, 0.22)
+        post.mesh = post_mesh
+        post.material_override = fence_mat
+        post.position = center + Vector3(-16.0 + float(i) * 4.5, 0.55, 15.0)
+        add_child(post)
+    for side in [-1.0, 1.0]:
+        var rail := MeshInstance3D.new()
+        var rail_mesh := BoxMesh.new()
+        rail_mesh.size = Vector3(31, 0.18, 0.18)
+        rail.mesh = rail_mesh
+        rail.material_override = fence_mat
+        rail.position = center + Vector3(0, 0.85, 15.0 + side * 0.35)
+        add_child(rail)
