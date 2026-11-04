@@ -147,7 +147,7 @@ func _make_player() -> void:
     player = CharacterBody3D.new()
     player.name = "Player"
     player.set_script(PLAYER_SCRIPT)
-    player.position = Vector3(0, 2, 0)
+    player.position = Vector3(0, 28, 0)
     add_child(player)
 
 func _spawn_bots() -> void:
