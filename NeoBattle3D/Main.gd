@@ -11,12 +11,93 @@ var alive_bots := 8
 
 var lobby_root: Node3D
 var lobby_layer: CanvasLayer
+var waiting_layer: CanvasLayer
+var waiting_active := false
+var waiting_seconds := 20.0
+var waiting_label: Label
 
 func _ready() -> void:
     randomize()
     _make_lobby()
 
+func _open_waiting_area() -> void:
+    if waiting_active:
+        return
+    waiting_active = true
+    waiting_seconds = 20.0
+    waiting_layer = CanvasLayer.new()
+    add_child(waiting_layer)
+
+    var shade := ColorRect.new()
+    shade.color = Color(0.015, 0.035, 0.055, 0.88)
+    shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    waiting_layer.add_child(shade)
+
+    var heading := Label.new()
+    heading.text = "ساحة انتظار اللاعبين"
+    heading.position = Vector2(390, 35)
+    heading.size = Vector2(500, 55)
+    heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    heading.add_theme_font_size_override("font_size", 34)
+    heading.add_theme_color_override("font_color", Color(0.98, 0.82, 0.38))
+    waiting_layer.add_child(heading)
+
+    var board := Panel.new()
+    board.position = Vector2(300, 125)
+    board.size = Vector2(680, 350)
+    waiting_layer.add_child(board)
+
+    var board_title := Label.new()
+    board_title.text = "ترتيب الفريق والاستعداد"
+    board_title.position = Vector2(25, 18)
+    board_title.size = Vector2(630, 40)
+    board_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    board_title.add_theme_font_size_override("font_size", 25)
+    board.add_child(board_title)
+
+    var rows := [
+        "01     أنت — قائد الفريق                         جاهز",
+        "02     لاعب الفريق 2                              جاهز",
+        "03     لاعب الفريق 3                              جاهز",
+        "04     لاعب الفريق 4                              جاهز"
+    ]
+    for i in range(rows.size()):
+        var row := Label.new()
+        row.text = rows[i]
+        row.position = Vector2(55, 85 + i * 55)
+        row.size = Vector2(570, 38)
+        row.add_theme_font_size_override("font_size", 20)
+        row.add_theme_color_override("font_color", Color(0.9, 0.94, 1))
+        board.add_child(row)
+
+    waiting_label = Label.new()
+    waiting_label.position = Vector2(350, 505)
+    waiting_label.size = Vector2(580, 45)
+    waiting_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    waiting_label.add_theme_font_size_override("font_size", 23)
+    waiting_label.add_theme_color_override("font_color", Color.WHITE)
+    waiting_layer.add_child(waiting_label)
+
+    var enter := Button.new()
+    enter.text = "متابعة إلى المباراة"
+    enter.position = Vector2(500, 585)
+    enter.size = Vector2(280, 70)
+    enter.add_theme_font_size_override("font_size", 24)
+    waiting_layer.add_child(enter)
+    enter.pressed.connect(_start_match)
+    _refresh_waiting_label()
+
+func _refresh_waiting_label() -> void:
+    if is_instance_valid(waiting_label):
+        if waiting_seconds > 0.0:
+            waiting_label.text = "بدء المباراة بعد: %d ثانية" % int(ceil(waiting_seconds))
+        else:
+            waiting_label.text = "اكتمل تجهيز ساحة الانتظار — يمكنك الدخول الآن"
+
 func _start_match() -> void:
+    waiting_active = false
+    if is_instance_valid(waiting_layer):
+        waiting_layer.queue_free()
     if is_instance_valid(lobby_layer):
         lobby_layer.queue_free()
     if is_instance_valid(lobby_root):
@@ -118,12 +199,12 @@ func _make_lobby() -> void:
     lobby_layer.add_child(mode)
 
     var start := Button.new()
-    start.text = "ابدأ المباراة"
+    start.text = "دخول ساحة الانتظار"
     start.position = Vector2(1000, 610)
     start.size = Vector2(230, 76)
-    start.add_theme_font_size_override("font_size", 25)
+    start.add_theme_font_size_override("font_size", 22)
     lobby_layer.add_child(start)
-    start.pressed.connect(_start_match)
+    start.pressed.connect(_open_waiting_area)
 
     var hint := Label.new()
     hint.text = "ردهة تجريبية • Offline"
@@ -135,7 +216,6 @@ func _make_lobby_avatar(pos: Vector3, index: int) -> void:
     var avatar := Node3D.new()
     avatar.position = pos
     lobby_root.add_child(avatar)
-
     var body := MeshInstance3D.new()
     var capsule := CapsuleMesh.new()
     capsule.radius = 0.62
@@ -147,7 +227,6 @@ func _make_lobby_avatar(pos: Vector3, index: int) -> void:
     body.material_override = outfit
     body.position.y = 1.0
     avatar.add_child(body)
-
     var head := MeshInstance3D.new()
     var head_mesh := SphereMesh.new()
     head_mesh.radius = 0.42
@@ -157,7 +236,6 @@ func _make_lobby_avatar(pos: Vector3, index: int) -> void:
     head.material_override = skin
     head.position.y = 2.25
     avatar.add_child(head)
-
     var pet := MeshInstance3D.new()
     var pet_mesh := SphereMesh.new()
     pet_mesh.radius = 0.38
@@ -195,6 +273,9 @@ func _make_palm_lobby(pos: Vector3) -> void:
         lobby_root.add_child(leaf)
 
 func _process(delta: float) -> void:
+    if waiting_active:
+        waiting_seconds = maxf(0.0, waiting_seconds - delta)
+        _refresh_waiting_label()
     elapsed += delta
     zone_radius = maxf(18.0, 90.0 - elapsed * 0.32)
     if is_instance_valid(zone):
@@ -378,7 +459,6 @@ func _make_hud() -> void:
     jump.size = Vector2(130, 70)
     layer.add_child(jump)
     jump.pressed.connect(func(): player.jump_now())
-
 
 func _make_villa_compound(pos: Vector3) -> void:
     var wall_mat := StandardMaterial3D.new()
