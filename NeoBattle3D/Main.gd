@@ -78,6 +78,7 @@ func _make_island() -> void:
         if p.length() < 18.0:
             p += Vector2(28, 25)
         _make_building(Vector3(p.x, 0, p.y), i)
+    _make_villa_compound(Vector3(48, 0, -42))
     for i in range(34):
         var p := Vector2(randf_range(-92, 92), randf_range(-92, 92))
         if p.length() > 22.0:
@@ -202,3 +203,47 @@ func _make_hud() -> void:
     layer.add_child(jump)
     jump.pressed.connect(func(): player.jump_now())
 
+
+func _make_villa_compound(pos: Vector3) -> void:
+    var wall_mat := StandardMaterial3D.new()
+    wall_mat.albedo_color = Color(0.78, 0.68, 0.52)
+    var wall_specs := [
+        [Vector3(0, 1.4, -13), Vector3(28, 2.8, 0.8)],
+        [Vector3(0, 1.4, 13), Vector3(28, 2.8, 0.8)],
+        [Vector3(-14, 1.4, 0), Vector3(0.8, 2.8, 26)],
+        [Vector3(14, 1.4, -5), Vector3(0.8, 2.8, 16)]
+    ]
+    for spec in wall_specs:
+        var wall := MeshInstance3D.new()
+        var wall_mesh := BoxMesh.new()
+        wall_mesh.size = spec[1]
+        wall.mesh = wall_mesh
+        wall.material_override = wall_mat
+        wall.position = pos + spec[0]
+        add_child(wall)
+    var house := StaticBody3D.new()
+    var house_mesh := MeshInstance3D.new()
+    var house_box := BoxMesh.new()
+    house_box.size = Vector3(15, 7, 11)
+    house_mesh.mesh = house_box
+    var house_mat := StandardMaterial3D.new()
+    house_mat.albedo_color = Color(0.43, 0.48, 0.34)
+    house_mesh.material_override = house_mat
+    house_mesh.position = pos + Vector3(0, 3.5, -3)
+    house.add_child(house_mesh)
+    var house_col := CollisionShape3D.new()
+    var house_shape := BoxShape3D.new()
+    house_shape.size = house_box.size
+    house_col.shape = house_shape
+    house_col.position = Vector3(0, 3.5, -3)
+    house.add_child(house_col)
+    var roof := MeshInstance3D.new()
+    var roof_box := BoxMesh.new()
+    roof_box.size = Vector3(16, 0.5, 12)
+    roof.mesh = roof_box
+    var roof_mat := StandardMaterial3D.new()
+    roof_mat.albedo_color = Color(0.62, 0.19, 0.12)
+    roof.material_override = roof_mat
+    roof.position = pos + Vector3(0, 7.25, -3)
+    house.add_child(roof)
+    add_child(house)
