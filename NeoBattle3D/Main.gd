@@ -63,24 +63,84 @@ func _make_island() -> void:
     collision.position.y = -0.5
     ground.add_child(collision)
     add_child(ground)
-    for i in range(22):
-        var block := StaticBody3D.new()
-        var bmesh := MeshInstance3D.new()
-        var box := BoxMesh.new()
-        var w := randf_range(4.0, 10.0)
-        box.size = Vector3(w, randf_range(3.0, 8.0), w)
-        bmesh.mesh = box
-        var bm := StandardMaterial3D.new()
-        bm.albedo_color = [Color(0.55,0.48,0.36), Color(0.38,0.43,0.48), Color(0.43,0.52,0.36)][i % 3]
-        bmesh.material_override = bm
-        block.add_child(bmesh)
-        var bc := CollisionShape3D.new()
-        var bs := BoxShape3D.new()
-        bs.size = box.size
-        bc.shape = bs
-        block.add_child(bc)
-        block.position = Vector3(randf_range(-75,75), box.size.y/2, randf_range(-75,75))
-        add_child(block)
+    var sea := MeshInstance3D.new()
+    var sea_mesh := PlaneMesh.new()
+    sea_mesh.size = Vector2(520, 520)
+    sea.mesh = sea_mesh
+    var sea_mat := StandardMaterial3D.new()
+    sea_mat.albedo_color = Color(0.08, 0.38, 0.55)
+    sea_mat.roughness = 0.28
+    sea.material_override = sea_mat
+    sea.position.y = -1.1
+    add_child(sea)
+    for i in range(16):
+        var p := Vector2(randf_range(-68, 68), randf_range(-68, 68))
+        if p.length() < 18.0:
+            p += Vector2(28, 25)
+        _make_building(Vector3(p.x, 0, p.y), i)
+    for i in range(34):
+        var p := Vector2(randf_range(-92, 92), randf_range(-92, 92))
+        if p.length() > 22.0:
+            _make_palm(Vector3(p.x, 0, p.y))
+
+func _make_building(pos: Vector3, index: int) -> void:
+    var w := randf_range(7.0, 11.0)
+    var h := randf_range(4.0, 8.0)
+    var d := randf_range(7.0, 10.0)
+    var body := StaticBody3D.new()
+    var mesh := MeshInstance3D.new()
+    var box := BoxMesh.new()
+    box.size = Vector3(w, h, d)
+    mesh.mesh = box
+    var mat := StandardMaterial3D.new()
+    mat.albedo_color = [Color(0.68,0.58,0.43), Color(0.35,0.52,0.58), Color(0.58,0.57,0.48), Color(0.48,0.43,0.37)][index % 4]
+    mesh.material_override = mat
+    mesh.position.y = h * 0.5
+    body.add_child(mesh)
+    var collision := CollisionShape3D.new()
+    var shape := BoxShape3D.new()
+    shape.size = box.size
+    collision.shape = shape
+    collision.position.y = h * 0.5
+    body.add_child(collision)
+    var roof := MeshInstance3D.new()
+    var roof_mesh := BoxMesh.new()
+    roof_mesh.size = Vector3(w + 0.5, 0.35, d + 0.5)
+    roof.mesh = roof_mesh
+    var roof_mat := StandardMaterial3D.new()
+    roof_mat.albedo_color = Color(0.48, 0.25, 0.16)
+    roof.material_override = roof_mat
+    roof.position.y = h + 0.18
+    body.add_child(roof)
+    body.position = pos
+    add_child(body)
+
+func _make_palm(pos: Vector3) -> void:
+    var trunk := MeshInstance3D.new()
+    var trunk_mesh := CylinderMesh.new()
+    trunk_mesh.top_radius = 0.18
+    trunk_mesh.bottom_radius = 0.32
+    trunk_mesh.height = 5.5
+    trunk.mesh = trunk_mesh
+    var trunk_mat := StandardMaterial3D.new()
+    trunk_mat.albedo_color = Color(0.38, 0.25, 0.13)
+    trunk.material_override = trunk_mat
+    trunk.position = pos + Vector3(0, 2.75, 0)
+    trunk.rotation.z = 0.08
+    add_child(trunk)
+    for j in range(6):
+        var leaf := MeshInstance3D.new()
+        var leaf_mesh := SphereMesh.new()
+        leaf_mesh.radius = 0.35
+        leaf_mesh.height = 3.8
+        leaf.mesh = leaf_mesh
+        var leaf_mat := StandardMaterial3D.new()
+        leaf_mat.albedo_color = Color(0.16, 0.39 + randf() * 0.12, 0.19)
+        leaf.material_override = leaf_mat
+        leaf.position = pos + Vector3(cos(TAU * j / 6.0) * 1.35, 5.25, sin(TAU * j / 6.0) * 1.35)
+        leaf.rotation.z = -0.9
+        leaf.rotation.y = TAU * j / 6.0
+        add_child(leaf)
 
 func _make_player() -> void:
     player = CharacterBody3D.new()
