@@ -9,14 +9,190 @@ var elapsed := 0.0
 var status_label: Label
 var alive_bots := 8
 
+var lobby_root: Node3D
+var lobby_layer: CanvasLayer
+
 func _ready() -> void:
     randomize()
+    _make_lobby()
+
+func _start_match() -> void:
+    if is_instance_valid(lobby_layer):
+        lobby_layer.queue_free()
+    if is_instance_valid(lobby_root):
+        lobby_root.queue_free()
     _make_environment()
     _make_island()
     _make_player()
     _spawn_bots()
     _make_hud()
     _make_zone()
+
+func _make_lobby() -> void:
+    lobby_root = Node3D.new()
+    lobby_root.name = "LobbyIsland"
+    add_child(lobby_root)
+
+    var world_env := WorldEnvironment.new()
+    var environment := Environment.new()
+    environment.background_mode = Environment.BG_SKY
+    environment.sky = Sky.new()
+    environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+    environment.ambient_light_color = Color(0.68, 0.78, 0.88)
+    environment.ambient_light_energy = 0.9
+    world_env.environment = environment
+    lobby_root.add_child(world_env)
+
+    var sun := DirectionalLight3D.new()
+    sun.rotation_degrees = Vector3(-48, -25, 0)
+    sun.light_energy = 1.25
+    lobby_root.add_child(sun)
+
+    var water := MeshInstance3D.new()
+    var water_mesh := PlaneMesh.new()
+    water_mesh.size = Vector2(180, 180)
+    water.mesh = water_mesh
+    var water_mat := StandardMaterial3D.new()
+    water_mat.albedo_color = Color(0.035, 0.31, 0.48)
+    water_mat.roughness = 0.25
+    water.material_override = water_mat
+    water.position.y = -1.3
+    lobby_root.add_child(water)
+
+    var platform := StaticBody3D.new()
+    var deck := MeshInstance3D.new()
+    var deck_mesh := BoxMesh.new()
+    deck_mesh.size = Vector3(25, 0.8, 13)
+    deck.mesh = deck_mesh
+    var wood := StandardMaterial3D.new()
+    wood.albedo_color = Color(0.38, 0.22, 0.12)
+    deck.material_override = wood
+    platform.add_child(deck)
+    var deck_collision := CollisionShape3D.new()
+    var deck_shape := BoxShape3D.new()
+    deck_shape.size = deck_mesh.size
+    deck_collision.shape = deck_shape
+    platform.add_child(deck_collision)
+    lobby_root.add_child(platform)
+
+    for i in range(4):
+        _make_lobby_avatar(Vector3(-7.5 + i * 5.0, 0.45, 0.0), i)
+    for i in range(5):
+        _make_palm_lobby(Vector3(-18 + i * 9, -0.2, -13 - (i % 2) * 5))
+
+    var camera := Camera3D.new()
+    camera.position = Vector3(0, 10, 27)
+    camera.rotation_degrees = Vector3(-17, 0, 0)
+    camera.current = true
+    lobby_root.add_child(camera)
+
+    lobby_layer = CanvasLayer.new()
+    add_child(lobby_layer)
+
+    var title := Label.new()
+    title.text = "NEO BATTLE"
+    title.position = Vector2(36, 22)
+    title.add_theme_font_size_override("font_size", 38)
+    title.add_theme_color_override("font_color", Color(0.95, 0.83, 0.38))
+    lobby_layer.add_child(title)
+
+    var currency := Label.new()
+    currency.text = "◆  1200       ◈  350"
+    currency.position = Vector2(920, 28)
+    currency.add_theme_font_size_override("font_size", 22)
+    currency.add_theme_color_override("font_color", Color.WHITE)
+    lobby_layer.add_child(currency)
+
+    var team := Label.new()
+    team.text = "الفريق\n1  اللاعب الرئيسي\n2  صديق الفريق\n3  لاعب\n4  لاعب"
+    team.position = Vector2(35, 430)
+    team.add_theme_font_size_override("font_size", 19)
+    team.add_theme_color_override("font_color", Color.WHITE)
+    lobby_layer.add_child(team)
+
+    var mode := Label.new()
+    mode.text = "الوضع: Battle Royale  •  الخريطة: جزيرة النخيل"
+    mode.position = Vector2(420, 565)
+    mode.add_theme_font_size_override("font_size", 20)
+    mode.add_theme_color_override("font_color", Color.WHITE)
+    lobby_layer.add_child(mode)
+
+    var start := Button.new()
+    start.text = "ابدأ المباراة"
+    start.position = Vector2(1000, 610)
+    start.size = Vector2(230, 76)
+    start.add_theme_font_size_override("font_size", 25)
+    lobby_layer.add_child(start)
+    start.pressed.connect(_start_match)
+
+    var hint := Label.new()
+    hint.text = "ردهة تجريبية • Offline"
+    hint.position = Vector2(36, 680)
+    hint.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
+    lobby_layer.add_child(hint)
+
+func _make_lobby_avatar(pos: Vector3, index: int) -> void:
+    var avatar := Node3D.new()
+    avatar.position = pos
+    lobby_root.add_child(avatar)
+
+    var body := MeshInstance3D.new()
+    var capsule := CapsuleMesh.new()
+    capsule.radius = 0.62
+    capsule.height = 2.0
+    body.mesh = capsule
+    var outfit := StandardMaterial3D.new()
+    var colors := [Color(0.16,0.36,0.62), Color(0.55,0.24,0.18), Color(0.22,0.43,0.29), Color(0.42,0.32,0.58)]
+    outfit.albedo_color = colors[index]
+    body.material_override = outfit
+    body.position.y = 1.0
+    avatar.add_child(body)
+
+    var head := MeshInstance3D.new()
+    var head_mesh := SphereMesh.new()
+    head_mesh.radius = 0.42
+    head.mesh = head_mesh
+    var skin := StandardMaterial3D.new()
+    skin.albedo_color = Color(0.72,0.55,0.42)
+    head.material_override = skin
+    head.position.y = 2.25
+    avatar.add_child(head)
+
+    var pet := MeshInstance3D.new()
+    var pet_mesh := SphereMesh.new()
+    pet_mesh.radius = 0.38
+    pet.mesh = pet_mesh
+    var pet_mat := StandardMaterial3D.new()
+    pet_mat.albedo_color = Color(0.9, 0.72, 0.28)
+    pet.material_override = pet_mat
+    pet.position = Vector3(1.0, 0.38, 1.2)
+    avatar.add_child(pet)
+
+func _make_palm_lobby(pos: Vector3) -> void:
+    var trunk := MeshInstance3D.new()
+    var trunk_mesh := CylinderMesh.new()
+    trunk_mesh.top_radius = 0.22
+    trunk_mesh.bottom_radius = 0.32
+    trunk_mesh.height = 6.5
+    trunk.mesh = trunk_mesh
+    var trunk_mat := StandardMaterial3D.new()
+    trunk_mat.albedo_color = Color(0.34,0.22,0.12)
+    trunk.material_override = trunk_mat
+    trunk.position = pos + Vector3(0,3.25,0)
+    lobby_root.add_child(trunk)
+    for j in range(6):
+        var leaf := MeshInstance3D.new()
+        var leaf_mesh := SphereMesh.new()
+        leaf_mesh.radius = 0.3
+        leaf_mesh.height = 4.2
+        leaf.mesh = leaf_mesh
+        var leaf_mat := StandardMaterial3D.new()
+        leaf_mat.albedo_color = Color(0.12,0.38,0.18)
+        leaf.material_override = leaf_mat
+        leaf.position = pos + Vector3(cos(TAU * j / 6.0) * 1.5, 6.1, sin(TAU * j / 6.0) * 1.5)
+        leaf.rotation.z = -0.9
+        leaf.rotation.y = TAU * j / 6.0
+        lobby_root.add_child(leaf)
 
 func _process(delta: float) -> void:
     elapsed += delta
