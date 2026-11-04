@@ -1,0 +1,35 @@
+name: Build NeoBattle3D Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "NeoBattle3D/**"
+      - ".github/workflows/neobattle3d-android.yml"
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Import Godot project
+        working-directory: NeoBattle3D
+        run: godot --headless --editor --path . --quit
+
+      - name: Export Android APK
+        working-directory: NeoBattle3D
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-debug "Android" build/NeoBattle3D.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NeoBattle3D-Android-APK
+          path: NeoBattle3D/build/NeoBattle3D.apk
+          if-no-files-found: error
+          retention-days: 14
