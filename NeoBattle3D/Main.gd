@@ -15,6 +15,8 @@ var waiting_layer: CanvasLayer
 var waiting_active := false
 var waiting_seconds := 20.0
 var waiting_label: Label
+var match_started := false
+var match_finished := false
 
 func _ready() -> void:
     randomize()
@@ -95,6 +97,10 @@ func _refresh_waiting_label() -> void:
             waiting_label.text = "اكتمل تجهيز ساحة الانتظار — يمكنك الدخول الآن"
 
 func _start_match() -> void:
+    if match_started:
+        return
+    match_started = true
+    elapsed = 0.0
     waiting_active = false
     if is_instance_valid(waiting_layer):
         waiting_layer.queue_free()
@@ -276,6 +282,8 @@ func _process(delta: float) -> void:
     if waiting_active:
         waiting_seconds = maxf(0.0, waiting_seconds - delta)
         _refresh_waiting_label()
+    if not match_started or match_finished:
+        return
     elapsed += delta
     zone_radius = maxf(18.0, 90.0 - elapsed * 0.32)
     if is_instance_valid(zone):
@@ -285,7 +293,46 @@ func _process(delta: float) -> void:
         if distance > zone_radius:
             player.take_damage(4.0 * delta)
         alive_bots = get_tree().get_nodes_in_group("bots").size()
-        status_label.text = "NEO BATTLE  |  Bots: %d  |  HP: %d  |  Zone: %dm" % [alive_bots, int(player.health), int(zone_radius)]
+        if is_instance_valid(status_label):
+            status_label.text = "NEO BATTLE  |  Bots: %d  |  HP: %d  |  Zone: %dm" % [alive_bots, int(player.health), int(zone_radius)]
+        if player.health <= 0.0:
+            _finish_match(false)
+        elif alive_bots == 0:
+            _finish_match(true)
+
+func _finish_match(victory: bool) -> void:
+    if match_finished:
+        return
+    match_finished = true
+    var layer := CanvasLayer.new()
+    add_child(layer)
+    var shade := ColorRect.new()
+    shade.color = Color(0.01, 0.025, 0.04, 0.9)
+    shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    layer.add_child(shade)
+    var title := Label.new()
+    title.text = "فوز! أحسنت" if victory else "انتهت المباراة"
+    title.position = Vector2(390, 220)
+    title.size = Vector2(500, 90)
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    title.add_theme_font_size_override("font_size", 42)
+    title.add_theme_color_override("font_color", Color(0.98, 0.82, 0.38) if victory else Color.WHITE)
+    layer.add_child(title)
+    var details := Label.new()
+    details.text = "تم إقصاء جميع المنافسين" if victory else "حاول مرة أخرى"
+    details.position = Vector2(390, 315)
+    details.size = Vector2(500, 50)
+    details.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    details.add_theme_font_size_override("font_size", 24)
+    details.add_theme_color_override("font_color", Color.WHITE)
+    layer.add_child(details)
+    var restart := Button.new()
+    restart.text = "العودة إلى اللوبي"
+    restart.position = Vector2(500, 420)
+    restart.size = Vector2(280, 70)
+    restart.add_theme_font_size_override("font_size", 23)
+    layer.add_child(restart)
+    restart.pressed.connect(func(): get_tree().reload_current_scene())
 
 func _make_environment() -> void:
     var env := WorldEnvironment.new()
