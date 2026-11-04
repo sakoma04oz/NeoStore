@@ -383,6 +383,8 @@ func _make_island() -> void:
     _make_road(Vector3(38, 0.04, 34), Vector2(78, 5), -0.55)
     _make_beach_edges()
     _make_street_lights()
+    _make_coastal_rocks()
+    _make_forest_patches()
     _make_district(Vector3(0, 0, -58), 5, 0, "PEAK")
     _make_district(Vector3(-62, 0, -32), 4, 1, "MILL")
     _make_district(Vector3(62, 0, 32), 5, 2, "FACTORY")
@@ -802,3 +804,31 @@ func _make_village_details(center: Vector3) -> void:
         rail.material_override = fence_mat
         rail.position = center + Vector3(0, 0.85, 15.0 + side * 0.35)
         add_child(rail)
+
+
+func _make_coastal_rocks() -> void:
+    var rock_mat := StandardMaterial3D.new()
+    rock_mat.albedo_color = Color(0.31, 0.34, 0.32)
+    rock_mat.roughness = 1.0
+    for i in range(34):
+        var angle := TAU * float(i) / 34.0
+        var radius := randf_range(101.0, 108.0)
+        var rock := MeshInstance3D.new()
+        var rock_mesh := SphereMesh.new()
+        rock_mesh.radius = randf_range(1.0, 2.2)
+        rock_mesh.height = randf_range(1.0, 2.4)
+        rock.mesh = rock_mesh
+        rock.material_override = rock_mat
+        rock.position = Vector3(cos(angle) * radius, 0.35, sin(angle) * radius)
+        rock.scale = Vector3(randf_range(0.8, 1.5), 0.7, randf_range(0.8, 1.4))
+        add_child(rock)
+
+func _make_forest_patches() -> void:
+    for patch in range(7):
+        var center := Vector2(randf_range(-88.0, 88.0), randf_range(-88.0, 88.0))
+        if center.length() < 35.0:
+            center = center.normalized() * 48.0
+        for i in range(9):
+            var p := center + Vector2(randf_range(-10.0, 10.0), randf_range(-10.0, 10.0))
+            if absf(p.x) < 96.0 and absf(p.y) < 96.0:
+                _make_palm(Vector3(p.x, 0, p.y))
