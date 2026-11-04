@@ -429,6 +429,30 @@ func _make_building(pos: Vector3, index: int) -> void:
     roof.material_override = roof_mat
     roof.position.y = h + 0.18
     body.add_child(roof)
+
+    var window_mat := StandardMaterial3D.new()
+    window_mat.albedo_color = Color(0.12, 0.28, 0.34)
+    window_mat.metallic = 0.18
+    window_mat.roughness = 0.28
+    for side in [-1.0, 1.0]:
+        var window_mesh := MeshInstance3D.new()
+        var pane := BoxMesh.new()
+        pane.size = Vector3(1.25, 1.15, 0.12)
+        window_mesh.mesh = pane
+        window_mesh.material_override = window_mat
+        window_mesh.position = Vector3(side * w * 0.23, h * 0.62, d * 0.5 + 0.07)
+        body.add_child(window_mesh)
+
+    var door := MeshInstance3D.new()
+    var door_mesh := BoxMesh.new()
+    door_mesh.size = Vector3(1.35, 2.25, 0.16)
+    door.mesh = door_mesh
+    var door_mat := StandardMaterial3D.new()
+    door_mat.albedo_color = Color(0.22, 0.14, 0.09)
+    door.material_override = door_mat
+    door.position = Vector3(0, 1.12, d * 0.5 + 0.08)
+    body.add_child(door)
+
     body.position = pos
     add_child(body)
 
