@@ -8,12 +8,16 @@ var camera_pivot: Node3D
 var camera: Camera3D
 var last_touch := -1
 var fire_cooldown := 0.0
-var gliding := true
+
+# مظلة البداية منفصلة تماماً عن الطائرة الشراعية الحمراء.
+var parachuting := true
+var parachute_root: Node3D
+var gliding := false
 var glider_root: Node3D
 
 func _ready() -> void:
     _make_character()
-    _make_glider()
+    _make_parachute()
     camera_pivot = Node3D.new()
     camera_pivot.position.y = 1.5
     add_child(camera_pivot)
@@ -42,9 +46,41 @@ func _make_character() -> void:
     col.position.y = 0.95
     add_child(col)
 
+func _make_parachute() -> void:
+    parachute_root = Node3D.new()
+    parachute_root.position = Vector3(0, 4.0, 0)
+    add_child(parachute_root)
+
+    var canopy := MeshInstance3D.new()
+    var canopy_mesh := SphereMesh.new()
+    canopy_mesh.radius = 2.5
+    canopy_mesh.height = 1.45
+    canopy.mesh = canopy_mesh
+    canopy.scale = Vector3(1.0, 0.42, 0.62)
+    var canopy_mat := StandardMaterial3D.new()
+    canopy_mat.albedo_color = Color(0.82, 0.12, 0.16)
+    canopy_mat.roughness = 0.75
+    canopy.material_override = canopy_mat
+    parachute_root.add_child(canopy)
+
+    var rope_mat := StandardMaterial3D.new()
+    rope_mat.albedo_color = Color(0.92, 0.88, 0.76)
+    for x in [-1.25, 1.25]:
+        for z in [-0.55, 0.55]:
+            var rope := MeshInstance3D.new()
+            var rope_mesh := CylinderMesh.new()
+            rope_mesh.top_radius = 0.018
+            rope_mesh.bottom_radius = 0.018
+            rope_mesh.height = 3.7
+            rope.mesh = rope_mesh
+            rope.material_override = rope_mat
+            rope.position = Vector3(x * 0.65, -1.85, z * 0.55)
+            rope.rotation.z = -x * 0.12
+            parachute_root.add_child(rope)
+
 func _make_glider() -> void:
     glider_root = Node3D.new()
-    glider_root.position.y = 3.0
+    glider_root.position = Vector3(0, 3.0, 0)
     add_child(glider_root)
     var wing_mat := StandardMaterial3D.new()
     wing_mat.albedo_color = Color(0.72, 0.08, 0.12)
@@ -68,19 +104,30 @@ func _make_glider() -> void:
 
 func _physics_process(delta: float) -> void:
     fire_cooldown = maxf(0.0, fire_cooldown - delta)
+
     if not is_on_floor():
-        velocity.y -= (gravity * (0.22 if gliding else 1.0)) * delta
-    elif gliding:
-        gliding = false
-        if is_instance_valid(glider_root):
-            glider_root.queue_free()
+        var fall_factor := 0.24 if parachuting else (0.3 if gliding else 1.0)
+        velocity.y -= gravity * fall_factor * delta
+    else:
+        if parachuting:
+            parachuting = false
+            if is_instance_valid(parachute_root):
+                parachute_root.queue_free()
+        if gliding:
+            gliding = false
+            if is_instance_valid(glider_root):
+                glider_root.queue_free()
+
+    if Input.is_action_just_pressed("glider"):
+        toggle_glider()
     if Input.is_action_just_pressed("jump"):
         jump_now()
+
     var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
     var forward := -camera_pivot.global_basis.z
     var right := camera_pivot.global_basis.x
     var direction := (right * input_dir.x + forward * input_dir.y).normalized()
-    var move_speed := 9.0 if gliding else SPEED
+    var move_speed := 8.5 if parachuting else (9.0 if gliding else SPEED)
     if direction.length() > 0.01:
         velocity.x = direction.x * move_speed
         velocity.z = direction.z * move_speed
@@ -89,6 +136,16 @@ func _physics_process(delta: float) -> void:
         velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 1.2)
         velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 1.2)
     move_and_slide()
+
+func toggle_glider() -> void:
+    # الطائرة الشراعية أداة مستقلة تُفعّل أثناء وجود اللاعب في الهواء.
+    if parachuting or is_on_floor():
+        return
+    gliding = not gliding
+    if gliding:
+        _make_glider()
+    elif is_instance_valid(glider_root):
+        glider_root.queue_free()
 
 func jump_now() -> void:
     if is_on_floor():
