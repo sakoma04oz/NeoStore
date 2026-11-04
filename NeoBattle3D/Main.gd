@@ -1,16 +1,20 @@
 extends Node3D
 
 const PLAYER_SCRIPT = preload("res://Player.gd")
+const BOT_SCRIPT = preload("res://Bot.gd")
 var player: CharacterBody3D
 var zone: MeshInstance3D
 var zone_radius := 90.0
 var elapsed := 0.0
 var status_label: Label
+var alive_bots := 8
 
 func _ready() -> void:
+    randomize()
     _make_environment()
     _make_island()
     _make_player()
+    _spawn_bots()
     _make_hud()
     _make_zone()
 
@@ -21,7 +25,10 @@ func _process(delta: float) -> void:
         zone.scale = Vector3(zone_radius / 90.0, 1.0, zone_radius / 90.0)
     if is_instance_valid(player):
         var distance := Vector2(player.global_position.x, player.global_position.z).length()
-        status_label.text = "NEO BATTLE 3D   |   المنطقة الآمنة: %dm   |   %s" % [int(zone_radius), "داخل المنطقة" if distance < zone_radius else "ارجع إلى المنطقة!"]
+        if distance > zone_radius:
+            player.take_damage(4.0 * delta)
+        alive_bots = get_tree().get_nodes_in_group("bots").size()
+        status_label.text = "NEO BATTLE  |  Bots: %d  |  HP: %d  |  Zone: %dm" % [alive_bots, int(player.health), int(zone_radius)]
 
 func _make_environment() -> void:
     var env := WorldEnvironment.new()
@@ -40,7 +47,6 @@ func _make_environment() -> void:
 
 func _make_island() -> void:
     var ground := StaticBody3D.new()
-    ground.name = "Island"
     var mesh := MeshInstance3D.new()
     var plane := PlaneMesh.new()
     plane.size = Vector2(220, 220)
@@ -57,7 +63,7 @@ func _make_island() -> void:
     collision.position.y = -0.5
     ground.add_child(collision)
     add_child(ground)
-    for i in range(18):
+    for i in range(22):
         var block := StaticBody3D.new()
         var bmesh := MeshInstance3D.new()
         var box := BoxMesh.new()
@@ -83,6 +89,16 @@ func _make_player() -> void:
     player.position = Vector3(0, 2, 0)
     add_child(player)
 
+func _spawn_bots() -> void:
+    for i in range(8):
+        var bot := CharacterBody3D.new()
+        bot.set_script(BOT_SCRIPT)
+        bot.add_to_group("bots")
+        bot.target = player
+        var angle := TAU * float(i) / 8.0
+        bot.position = Vector3(cos(angle) * randf_range(24, 48), 2, sin(angle) * randf_range(24, 48))
+        add_child(bot)
+
 func _make_zone() -> void:
     zone = MeshInstance3D.new()
     var cylinder := CylinderMesh.new()
@@ -103,12 +119,26 @@ func _make_hud() -> void:
     add_child(layer)
     status_label = Label.new()
     status_label.position = Vector2(18, 16)
-    status_label.add_theme_font_size_override("font_size", 20)
+    status_label.add_theme_font_size_override("font_size", 19)
     status_label.add_theme_color_override("font_color", Color.WHITE)
     layer.add_child(status_label)
     var help := Label.new()
-    help.text = "WASD / الأسهم للحركة • Space للقفز • اسحب الشاشة لتدوير الكاميرا"
+    help.text = "WASD / الأسهم للحركة • Space للقفز • زر FIRE للإطلاق"
     help.position = Vector2(18, 48)
     help.add_theme_font_size_override("font_size", 15)
     help.add_theme_color_override("font_color", Color(0.92,0.95,1))
     layer.add_child(help)
+    var fire := Button.new()
+    fire.text = "FIRE"
+    fire.position = Vector2(1080, 590)
+    fire.size = Vector2(150, 90)
+    fire.add_theme_font_size_override("font_size", 24)
+    layer.add_child(fire)
+    fire.pressed.connect(func(): player.shoot())
+    var jump := Button.new()
+    jump.text = "JUMP"
+    jump.position = Vector2(920, 610)
+    jump.size = Vector2(130, 70)
+    layer.add_child(jump)
+    jump.pressed.connect(func(): player.jump_now())
+
