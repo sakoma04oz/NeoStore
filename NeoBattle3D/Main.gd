@@ -381,6 +381,8 @@ func _make_island() -> void:
     _make_road(Vector3(0, 0.04, 0), Vector2(7, 190), 0.0)
     _make_road(Vector3(-38, 0.04, -34), Vector2(78, 5), -0.55)
     _make_road(Vector3(38, 0.04, 34), Vector2(78, 5), -0.55)
+    _make_beach_edges()
+    _make_street_lights()
     _make_district(Vector3(0, 0, -58), 5, 0, "PEAK")
     _make_district(Vector3(-62, 0, -32), 4, 1, "MILL")
     _make_district(Vector3(62, 0, 32), 5, 2, "FACTORY")
@@ -583,3 +585,113 @@ func _make_district(center: Vector3, count: int, style: int, district_name: Stri
     sign.modulate = Color(1.0, 0.88, 0.58)
     sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
     add_child(sign)
+    if style == 2:
+        _make_factory_stack(center + Vector3(17, 0, -4))
+    elif style == 3:
+        _make_graveyard_props(center)
+    elif style == 0:
+        _make_observatory_dish(center + Vector3(-17, 0, 8))
+
+
+func _make_beach_edges() -> void:
+    var sand_mat := StandardMaterial3D.new()
+    sand_mat.albedo_color = Color(0.72, 0.63, 0.42)
+    sand_mat.roughness = 1.0
+    var strips := [
+        [Vector3(0, 0.025, -105), Vector3(205, 0.12, 9)],
+        [Vector3(0, 0.025, 105), Vector3(205, 0.12, 9)],
+        [Vector3(-105, 0.025, 0), Vector3(9, 0.12, 205)],
+        [Vector3(105, 0.025, 0), Vector3(9, 0.12, 205)]
+    ]
+    for item in strips:
+        var beach := MeshInstance3D.new()
+        var beach_mesh := BoxMesh.new()
+        beach_mesh.size = item[1]
+        beach.mesh = beach_mesh
+        beach.material_override = sand_mat
+        beach.position = item[0]
+        add_child(beach)
+
+func _make_street_lights() -> void:
+    var pole_mat := StandardMaterial3D.new()
+    pole_mat.albedo_color = Color(0.22, 0.24, 0.23)
+    var lamp_mat := StandardMaterial3D.new()
+    lamp_mat.albedo_color = Color(1.0, 0.82, 0.48)
+    lamp_mat.emission_enabled = true
+    lamp_mat.emission = Color(0.75, 0.48, 0.18)
+    for i in range(-4, 5):
+        for side in [-1.0, 1.0]:
+            var pole := MeshInstance3D.new()
+            var pole_mesh := CylinderMesh.new()
+            pole_mesh.top_radius = 0.10
+            pole_mesh.bottom_radius = 0.16
+            pole_mesh.height = 5.0
+            pole.mesh = pole_mesh
+            pole.material_override = pole_mat
+            pole.position = Vector3(float(i) * 21.0 + side * 5.0, 2.5, -4.5 if side < 0.0 else 4.5)
+            add_child(pole)
+            var lamp := MeshInstance3D.new()
+            var lamp_mesh := SphereMesh.new()
+            lamp_mesh.radius = 0.32
+            lamp.mesh = lamp_mesh
+            lamp.material_override = lamp_mat
+            lamp.position = pole.position + Vector3(0, 2.5, 0)
+            add_child(lamp)
+
+func _make_factory_stack(pos: Vector3) -> void:
+    var stack := MeshInstance3D.new()
+    var mesh := CylinderMesh.new()
+    mesh.top_radius = 0.65
+    mesh.bottom_radius = 0.85
+    mesh.height = 10.0
+    stack.mesh = mesh
+    var mat := StandardMaterial3D.new()
+    mat.albedo_color = Color(0.35, 0.36, 0.34)
+    stack.material_override = mat
+    stack.position = pos + Vector3(0, 5, 0)
+    add_child(stack)
+    var band := MeshInstance3D.new()
+    var band_mesh := CylinderMesh.new()
+    band_mesh.top_radius = 0.88
+    band_mesh.bottom_radius = 0.88
+    band_mesh.height = 0.35
+    band.mesh = band_mesh
+    var band_mat := StandardMaterial3D.new()
+    band_mat.albedo_color = Color(0.72, 0.24, 0.12)
+    band.material_override = band_mat
+    band.position = pos + Vector3(0, 7, 0)
+    add_child(band)
+
+func _make_graveyard_props(center: Vector3) -> void:
+    var stone_mat := StandardMaterial3D.new()
+    stone_mat.albedo_color = Color(0.48, 0.49, 0.45)
+    for i in range(7):
+        var stone := MeshInstance3D.new()
+        var stone_mesh := BoxMesh.new()
+        stone_mesh.size = Vector3(0.8, 1.3 + float(i % 3) * 0.25, 0.35)
+        stone.mesh = stone_mesh
+        stone.material_override = stone_mat
+        stone.position = center + Vector3(-9.0 + float(i) * 3.0, stone_mesh.size.y * 0.5, 14.0 + float(i % 2) * 2.0)
+        add_child(stone)
+
+func _make_observatory_dish(pos: Vector3) -> void:
+    var base := MeshInstance3D.new()
+    var base_mesh := CylinderMesh.new()
+    base_mesh.top_radius = 0.45
+    base_mesh.bottom_radius = 0.65
+    base_mesh.height = 5.0
+    base.mesh = base_mesh
+    var base_mat := StandardMaterial3D.new()
+    base_mat.albedo_color = Color(0.38, 0.42, 0.44)
+    base.material_override = base_mat
+    base.position = pos + Vector3(0, 2.5, 0)
+    add_child(base)
+    var dish := MeshInstance3D.new()
+    var dish_mesh := SphereMesh.new()
+    dish_mesh.radius = 2.5
+    dish_mesh.height = 0.65
+    dish.mesh = dish_mesh
+    dish.material_override = base_mat
+    dish.position = pos + Vector3(0, 5.1, 0)
+    dish.rotation_degrees.x = -25
+    add_child(dish)
