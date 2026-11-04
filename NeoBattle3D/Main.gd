@@ -377,15 +377,22 @@ func _make_island() -> void:
     sea.material_override = sea_mat
     sea.position.y = -1.1
     add_child(sea)
-    for i in range(16):
-        var p := Vector2(randf_range(-68, 68), randf_range(-68, 68))
-        if p.length() < 18.0:
-            p += Vector2(28, 25)
-        _make_building(Vector3(p.x, 0, p.y), i)
+    _make_road(Vector3(0, 0.04, 0), Vector2(190, 7), 0.0)
+    _make_road(Vector3(0, 0.04, 0), Vector2(7, 190), 0.0)
+    _make_road(Vector3(-38, 0.04, -34), Vector2(78, 5), -0.55)
+    _make_road(Vector3(38, 0.04, 34), Vector2(78, 5), -0.55)
+    _make_district(Vector3(0, 0, -58), 5, 0, "PEAK")
+    _make_district(Vector3(-62, 0, -32), 4, 1, "MILL")
+    _make_district(Vector3(62, 0, 32), 5, 2, "FACTORY")
+    _make_district(Vector3(-62, 0, 58), 3, 3, "GRAVEYARD")
+    _make_district(Vector3(58, 0, -62), 4, 0, "OBSERVATORY")
+    _make_district(Vector3(-58, 0, 0), 3, 1, "RIVERSIDE")
+    _make_district(Vector3(0, 0, 62), 4, 2, "VILLAGE")
+    _make_district(Vector3(62, 0, 0), 3, 3, "SHIPYARD")
     _make_villa_compound(Vector3(48, 0, -42))
-    for i in range(34):
-        var p := Vector2(randf_range(-92, 92), randf_range(-92, 92))
-        if p.length() > 22.0:
+    for i in range(68):
+        var p := Vector2(randf_range(-100, 100), randf_range(-100, 100))
+        if p.length() > 24.0 and absf(p.x) > 6.0 and absf(p.y) > 6.0:
             _make_palm(Vector3(p.x, 0, p.y))
 
 func _make_building(pos: Vector3, index: int) -> void:
@@ -550,3 +557,29 @@ func _make_villa_compound(pos: Vector3) -> void:
     roof.position = pos + Vector3(0, 7.25, -3)
     house.add_child(roof)
     add_child(house)
+
+func _make_road(pos: Vector3, dimensions: Vector2, angle: float) -> void:
+    var road := MeshInstance3D.new()
+    var road_mesh := BoxMesh.new()
+    road_mesh.size = Vector3(dimensions.x, 0.08, dimensions.y)
+    road.mesh = road_mesh
+    var road_mat := StandardMaterial3D.new()
+    road_mat.albedo_color = Color(0.17, 0.19, 0.18)
+    road.material_override = road_mat
+    road.position = pos
+    road.rotation.y = angle
+    add_child(road)
+
+func _make_district(center: Vector3, count: int, style: int, district_name: String) -> void:
+    var offsets := [Vector2(-12, -10), Vector2(0, -12), Vector2(12, -9), Vector2(-10, 4), Vector2(3, 5), Vector2(13, 7)]
+    for i in range(count):
+        var offset: Vector2 = offsets[i % offsets.size()]
+        _make_building(center + Vector3(offset.x, 0, offset.y), style + i)
+    var sign := Label3D.new()
+    sign.text = district_name
+    sign.position = center + Vector3(0, 9, -17)
+    sign.font_size = 38
+    sign.outline_size = 7
+    sign.modulate = Color(1.0, 0.88, 0.58)
+    sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+    add_child(sign)
